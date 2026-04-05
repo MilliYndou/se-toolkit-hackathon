@@ -30,12 +30,12 @@ A theme-based quiz manager where teachers curate questions and students generate
 - **Students**: University students preparing for exams who need targeted practice quizzes
 - **Teachers**: Instructors who create and manage quiz content for their courses
 
-### Problem That Your Product Solves for End Users
+### Problem That This Product Solves for End Users
 
 - **Students**: Struggle to find organized, topic-specific practice quizzes. Existing tools are either generic, require unreliable AI, or lack progress tracking.
 - **Teachers**: Spend excessive time manually creating quiz questions. No centralized system to monitor student progress across quizzes.
 
-### Your Solution
+### Solution
 
 StudyBuddy is a web-based quiz platform with role-based access control:
 
