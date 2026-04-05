@@ -1,0 +1,10 @@
+services:
+  studybuddy:
+    build: .
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app/backend
+    environment:
+      - DB_NAME=studybuddy.db
+    restart: unless-stopped

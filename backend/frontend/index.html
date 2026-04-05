@@ -1,0 +1,855 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StudyBuddy - Quiz Manager</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container { max-width: 900px; margin: 0 auto; }
+        header { text-align: center; color: white; margin-bottom: 30px; }
+        header h1 { font-size: 2.5em; margin-bottom: 10px; }
+        header p { font-size: 1.1em; opacity: 0.9; }
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            margin-bottom: 20px;
+        }
+        .hidden { display: none !important; }
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s;
+            margin: 5px;
+        }
+        .btn:hover { transform: translateY(-2px); }
+        .btn:disabled { opacity: 0.6; cursor: not-allowed; }
+        .btn-danger { background: #dc3545; }
+        .btn-secondary { background: #6c757d; }
+        .btn-success { background: #28a745; }
+        input, select, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            margin: 8px 0;
+        }
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        .user-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        .role-badge {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        .role-teacher { background: #667eea; color: white; }
+        .role-student { background: #28a745; color: white; }
+        .theme-card {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 10px 0;
+            border-left: 4px solid #667eea;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .theme-card:hover { background: #e9ecef; }
+        .theme-card.selected { border-left-color: #28a745; background: #d4edda; }
+        .q-box {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 15px 0;
+            border-left: 4px solid #667eea;
+        }
+        .question { font-size: 1.1em; font-weight: bold; margin-bottom: 15px; }
+        .option-label {
+            display: flex;
+            align-items: center;
+            padding: 12px 15px;
+            margin: 8px 0;
+            background: white;
+            border-radius: 8px;
+            cursor: pointer;
+            border: 2px solid transparent;
+        }
+        .option-label:hover { background: #f0f0f0; }
+        .option-label input { width: auto; margin-right: 12px; }
+        .option-letter {
+            display: inline-block;
+            width: 30px;
+            height: 30px;
+            line-height: 30px;
+            text-align: center;
+            background: #e0e0e0;
+            border-radius: 50%;
+            margin-right: 12px;
+            font-weight: bold;
+        }
+        .option-label input:checked + .option-letter {
+            background: #667eea;
+            color: white;
+        }
+        .score-display {
+            text-align: center;
+            font-size: 2.5em;
+            font-weight: bold;
+            padding: 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 15px;
+            margin: 20px 0;
+        }
+        .result-item {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 15px 0;
+            border-left: 4px solid #667eea;
+        }
+        .result-item.correct { border-left-color: #28a745; }
+        .result-item.incorrect { border-left-color: #dc3545; }
+        .explanation {
+            background: #e8f4fd;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 10px;
+            font-size: 14px;
+        }
+        .history-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        .history-table th, .history-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .history-table th { background: #f8f9fa; font-weight: bold; }
+        .tabs { display: flex; gap: 10px; margin-bottom: 20px; }
+        .tab-btn {
+            flex: 1;
+            padding: 12px;
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .tab-btn.active { background: #667eea; color: white; border-color: #667eea; }
+        .loading { text-align: center; padding: 40px; color: #667eea; }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .stat-card {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        .stat-number { font-size: 2em; font-weight: bold; color: #667eea; }
+        .alert {
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+        .alert-success { background: #d4edda; color: #155724; }
+        .alert-error { background: #f8d7da; color: #721c24; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎓 StudyBuddy</h1>
+            <p>Theme-Based Quiz Manager for Students & Teachers</p>
+        </header>
+
+        <!-- Login Section -->
+        <div id="auth-section" class="card">
+            <h2>🔐 Login</h2>
+            <input type="text" id="login-username" placeholder="Username (teacher1 / student1)">
+            <input type="password" id="login-password" placeholder="Password (demo123)">
+            <button class="btn" onclick="login()" style="width:100%;margin-top:15px;">Login</button>
+            <div class="alert alert-success" style="margin-top:20px;font-size:14px;">
+                <strong>Demo Accounts:</strong><br>
+                👨‍🏫 Teacher: <code>teacher1</code> / <code>demo123</code><br>
+                👨‍🎓 Student: <code>student1</code> / <code>demo123</code>
+            </div>
+        </div>
+
+        <!-- Main App Section -->
+        <div id="app-section" class="hidden">
+            <!-- User Info Bar -->
+            <div class="user-info">
+                <div>
+                    <span id="user-greeting">Welcome, <strong id="current-user"></strong></span>
+                    <span id="user-role" class="role-badge role-student"></span>
+                </div>
+                <button class="btn btn-secondary" onclick="logout()">Logout</button>
+            </div>
+
+            <!-- Tabs -->
+            <div class="tabs">
+                <button class="tab-btn active" onclick="showTab('quiz', event)">📝 Take Quiz</button>
+                <button class="tab-btn" onclick="showTab('history', event)">📊 History</button>
+                <button class="tab-btn teacher-only hidden" onclick="showTab('manage', event)">👨‍🏫 Manage</button>
+            </div>
+
+            <!-- Quiz Tab -->
+            <div id="quiz-tab" class="card">
+                <h2>Select a Theme</h2>
+                <div id="themes-list" class="loading">Loading themes...</div>
+                
+                <div id="quiz-area" class="hidden">
+                    <h3 id="quiz-theme-name" style="margin:20px 0 10px 0;"></h3>
+                    <div id="questions-container"></div>
+                    <button class="btn hidden" onclick="submitQuiz()" style="width:100%;margin-top:20px;" id="submit-btn">
+                        ✅ Submit Answers
+                    </button>
+                </div>
+
+                <div id="results-area" class="hidden">
+                    <div class="score-display">
+                        Score: <span id="final-score">0/0</span>
+                        (<span id="final-percentage">0</span>%)
+                    </div>
+                    <div id="results-container"></div>
+                    <button class="btn" onclick="backToThemes()" style="width:100%;margin-top:20px;">
+                        🔄 New Quiz
+                    </button>
+                </div>
+            </div>
+
+            <!-- History Tab -->
+            <div id="history-tab" class="card hidden">
+                <h2>📊 Quiz History</h2>
+                <div id="history-container" class="loading">Loading history...</div>
+            </div>
+
+            <!-- Teacher Manage Tab -->
+            <div id="manage-tab" class="card hidden">
+                <h2>👨‍🏫 Teacher Panel</h2>
+                
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-number" id="stat-themes">0</div>
+                        <div>Themes</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="stat-questions">0</div>
+                        <div>Questions</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="stat-students">0</div>
+                        <div>Students</div>
+                    </div>
+                </div>
+
+                <!-- Student History for Teachers -->
+                <div style="margin:30px 0;">
+                    <h3>📊 Student Quiz History</h3>
+                    <div id="teacher-history-container" class="loading">Loading student history...</div>
+                </div>
+
+                <!-- Add Theme -->
+                <div style="margin:30px 0;">
+                    <h3>➕ Add New Theme</h3>
+                    <input type="text" id="new-theme-name" placeholder="Theme Name (e.g., Physics 101)">
+                    <textarea id="new-theme-desc" placeholder="Description (e.g., Introduction to physics concepts)" style="min-height:80px;"></textarea>
+                    <button class="btn btn-success" onclick="addTheme()">Add Theme</button>
+                </div>
+
+                <!-- Add Question -->
+                <div style="margin:30px 0;">
+                    <h3>➕ Add New Question</h3>
+                    <select id="question-theme-select">
+                        <option value="">Select theme...</option>
+                    </select>
+                    <textarea id="new-question-text" placeholder="Question text (ending with ?)" style="min-height:80px;"></textarea>
+                    <div class="form-grid">
+                        <input type="text" id="opt-a" placeholder="Option A">
+                        <input type="text" id="opt-b" placeholder="Option B">
+                        <input type="text" id="opt-c" placeholder="Option C">
+                        <input type="text" id="opt-d" placeholder="Option D">
+                    </div>
+                    <select id="correct-answer">
+                        <option value="A">Correct Answer: A</option>
+                        <option value="B">Correct Answer: B</option>
+                        <option value="C">Correct Answer: C</option>
+                        <option value="D">Correct Answer: D</option>
+                    </select>
+                    <textarea id="question-explanation" placeholder="Explanation (shown after student answers)" style="min-height:60px;"></textarea>
+                    <button class="btn btn-success" onclick="addQuestion()">Add Question</button>
+                </div>
+
+                <!-- View Questions -->
+                <div style="margin:30px 0;">
+                    <h3>📋 Existing Questions</h3>
+                    <select id="view-questions-theme" onchange="loadQuestionsForTheme()">
+                        <option value="">All Themes</option>
+                    </select>
+                    <div id="questions-list" class="loading">Loading questions...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentUser = null;
+        let currentQuiz = null;
+        let currentTheme = null;
+
+        // ============ AUTH ============
+        async function login() {
+            // Reset any previous state first
+            currentQuiz = null;
+            currentTheme = null;
+            
+            const username = document.getElementById('login-username').value.trim();
+            const password = document.getElementById('login-password').value.trim();
+            
+            if (!username || !password) {
+                alert('Please enter username and password');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({username, password})
+                });
+                
+                const data = await response.json();
+                if (data.status === 'success') {
+                    currentUser = data.user;
+                    
+                    // Hide login, show app
+                    document.getElementById('auth-section').classList.add('hidden');
+                    document.getElementById('app-section').classList.remove('hidden');
+                    
+                    // Update user info
+                    document.getElementById('current-user').textContent = currentUser.username;
+                    
+                    const roleBadge = document.getElementById('user-role');
+                    roleBadge.textContent = currentUser.role === 'teacher' ? '👨‍🏫 Teacher' : '👨‍🎓 Student';
+                    roleBadge.className = `role-badge role-${currentUser.role}`;
+                    
+                    // Show/hide teacher tab based on role
+                    document.querySelectorAll('.teacher-only').forEach(el => {
+                        el.classList.toggle('hidden', currentUser.role !== 'teacher');
+                    });
+                    
+                    // Reset to quiz tab by default (pass null for eventObj)
+                    showTab('quiz', null);
+                    
+                    // Load initial data
+                    loadThemes();
+                    loadStats();
+                    
+                    console.log(`✅ Login successful: ${currentUser.username} (${currentUser.role})`);
+                } else {
+                    alert('Login failed: ' + data.detail);
+                }
+            } catch (error) {
+                alert('Login error: ' + error.message);
+            }
+        }
+
+        function logout() {
+            // Reset all state variables
+            currentUser = null;
+            currentQuiz = null;
+            currentTheme = null;
+            
+            // Hide app section, show login section
+            document.getElementById('auth-section').classList.remove('hidden');
+            document.getElementById('app-section').classList.add('hidden');
+            
+            // Clear login form
+            document.getElementById('login-username').value = '';
+            document.getElementById('login-password').value = '';
+            
+            // Reset all tabs to default state
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('[id$="-tab"]').forEach(tab => tab.classList.add('hidden'));
+            
+            // Reset quiz/results areas
+            document.getElementById('themes-list').classList.remove('hidden');
+            document.getElementById('quiz-area').classList.add('hidden');
+            document.getElementById('results-area').classList.add('hidden');
+            
+            // Hide submit button
+            const submitBtn = document.getElementById('submit-btn');
+            if (submitBtn) submitBtn.classList.add('hidden');
+            
+            // Clear containers
+            document.getElementById('questions-container').innerHTML = '';
+            document.getElementById('results-container').innerHTML = '';
+            document.getElementById('history-container').innerHTML = '<div class="loading">Loading history...</div>';
+            document.getElementById('questions-list').innerHTML = '<div class="loading">Loading questions...</div>';
+            document.getElementById('teacher-history-container').innerHTML = '<div class="loading">Loading student history...</div>';
+            
+            // Clear form inputs (teacher panel)
+            ['new-theme-name', 'new-theme-desc', 'new-question-text', 'opt-a', 'opt-b', 'opt-c', 'opt-d', 'question-explanation']
+                .forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) el.value = '';
+                });
+            
+            console.log('✅ Logout complete - all state reset');
+        }
+
+        // ============ TABS ============
+        function showTab(tabName, eventObj = null) {
+            // Hide ALL tabs first
+            document.querySelectorAll('[id$="-tab"]').forEach(tab => tab.classList.add('hidden'));
+            
+            // Remove active class from ALL tab buttons
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            
+            // Show selected tab
+            document.getElementById(`${tabName}-tab`).classList.remove('hidden');
+            
+            // Add active class to the clicked button (if event exists)
+            if (eventObj && eventObj.target) {
+                eventObj.target.classList.add('active');
+            } else {
+                // If called programmatically (from login), activate the correct button by tab name
+                const tabButtons = document.querySelectorAll('.tab-btn');
+                if (tabName === 'quiz') tabButtons[0]?.classList.add('active');
+                else if (tabName === 'history') tabButtons[1]?.classList.add('active');
+                else if (tabName === 'manage') tabButtons[2]?.classList.add('active');
+            }
+            
+            // Load data for selected tab
+            if (tabName === 'quiz') {
+                loadThemes();
+                document.getElementById('themes-list').classList.remove('hidden');
+                document.getElementById('quiz-area').classList.add('hidden');
+                document.getElementById('results-area').classList.add('hidden');
+            }
+            if (tabName === 'history') loadHistory();
+            if (tabName === 'manage') loadManagePanel();
+        }
+
+        // ============ THEMES ============
+        async function loadThemes() {
+            try {
+                const response = await fetch('/api/themes');
+                const themes = await response.json();
+                
+                const container = document.getElementById('themes-list');
+                container.innerHTML = themes.map(t => `
+                    <div class="theme-card" onclick="selectTheme(${t.id}, '${t.name}')">
+                        <h3>📚 ${t.name}</h3>
+                        <p>${t.description}</p>
+                    </div>
+                `).join('');
+                
+                // Also populate teacher dropdowns
+                const selects = ['question-theme-select', 'view-questions-theme'];
+                selects.forEach(id => {
+                    const select = document.getElementById(id);
+                    if (select) {
+                        select.innerHTML = '<option value="">Select theme...</option>' +
+                            themes.map(t => `<option value="${t.id}">${t.name}</option>`).join('');
+                    }
+                });
+                
+            } catch (error) {
+                document.getElementById('themes-list').innerHTML = 
+                    '<div class="alert alert-error">Failed to load themes</div>';
+            }
+        }
+
+        function selectTheme(themeId, themeName) {
+            currentTheme = {id: themeId, name: themeName};
+            generateQuiz();
+        }
+
+        async function generateQuiz() {
+            document.getElementById('themes-list').classList.add('hidden');
+            document.getElementById('quiz-area').classList.remove('hidden');
+            document.getElementById('quiz-theme-name').textContent = `📚 ${currentTheme.name}`;
+            document.getElementById('questions-container').innerHTML = '<div class="loading">Generating quiz...</div>';
+            
+            // Hide submit button by default (show only on success)
+            const submitBtn = document.getElementById('submit-btn');
+            if (submitBtn) submitBtn.classList.add('hidden');
+            
+            try {
+                const response = await fetch('/api/student/generate', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({theme_id: currentTheme.id})
+                });
+                
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.detail || 'Failed to generate quiz');
+                }
+                
+                const data = await response.json();
+                currentQuiz = data;
+                
+                const container = document.getElementById('questions-container');
+                container.innerHTML = data.questions.map((q, i) => `
+                    <div class="q-box">
+                        <p class="question">Q${i+1}: ${q.question}</p>
+                        <div class="options">
+                            ${q.options.map((opt, j) => `
+                                <label class="option-label">
+                                    <input type="radio" name="q${i}" value="${String.fromCharCode(65+j)}">
+                                    <span class="option-letter">${String.fromCharCode(65+j)})</span>
+                                    <span>${opt}</span>
+                                </label>
+                            `).join('')}
+                        </div>
+                        <div class="explanation hidden" id="exp${i}">
+                            💡 <strong>Explanation:</strong> ${q.explanation}
+                        </div>
+                    </div>
+                `).join('');
+                
+                // Show submit button only on success
+                if (submitBtn) submitBtn.classList.remove('hidden');
+                
+            } catch (error) {
+                document.getElementById('questions-container').innerHTML = `
+                    <div class="alert alert-error">
+                        ❌ ${error.message}
+                    </div>
+                    <button class="btn" onclick="backToThemes()" style="margin-top:15px;">
+                        🔄 Back to Themes
+                    </button>
+                `;
+                // Keep submit button hidden
+                if (submitBtn) submitBtn.classList.add('hidden');
+            }
+        }
+
+        async function submitQuiz() {
+            const answers = [];
+            currentQuiz.questions.forEach((q, i) => {
+                const selected = document.querySelector(`input[name="q${i}"]:checked`);
+                if (selected) {
+                    answers.push(selected.value);
+                }
+            });
+            
+            if (answers.length < currentQuiz.questions.length) {
+                alert('Please answer all questions before submitting!');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/student/submit', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        user_id: currentUser.id,
+                        theme_id: currentTheme.id,
+                        question_ids: currentQuiz.questions.map(q => q.id),
+                        answers: answers
+                    })
+                });
+                
+                const data = await response.json();
+                
+                document.getElementById('quiz-area').classList.add('hidden');
+                document.getElementById('results-area').classList.remove('hidden');
+                document.getElementById('final-score').textContent = `${data.score}/${data.total}`;
+                document.getElementById('final-percentage').textContent = data.percentage;
+                
+                const container = document.getElementById('results-container');
+                container.innerHTML = data.results.map((r, i) => `
+                    <div class="result-item ${r.is_correct ? 'correct' : 'incorrect'}">
+                        <p><strong>Q${i+1}:</strong> ${r.question}</p>
+                        <p>${r.is_correct ? '✅' : '❌'} Your answer: <strong>${r.user_answer}</strong></p>
+                        ${!r.is_correct ? `<p>✅ Correct answer: <strong>${r.correct_answer}</strong></p>` : ''}
+                        <div class="explanation">💡 ${r.explanation}</div>
+                    </div>
+                `).join('');
+                
+            } catch (error) {
+                alert('Failed to submit quiz: ' + error.message);
+            }
+        }
+
+        function backToThemes() {
+            currentQuiz = null;
+            document.getElementById('results-area').classList.add('hidden');
+            document.getElementById('quiz-area').classList.add('hidden');
+            document.getElementById('themes-list').classList.remove('hidden');
+            
+            // Hide submit button until quiz generates successfully
+            const submitBtn = document.getElementById('submit-btn');
+            if (submitBtn) submitBtn.classList.add('hidden');
+            
+            loadThemes();
+        }
+
+        // ============ HISTORY ============
+        async function loadHistory() {
+            try {
+                const response = await fetch(`/api/student/history?user_id=${currentUser.id}`);
+                const history = await response.json();
+                
+                const container = document.getElementById('history-container');
+                if (history.length === 0) {
+                    container.innerHTML = '<p>No quiz history yet. Take your first quiz!</p>';
+                    return;
+                }
+                
+                container.innerHTML = `
+                    <table class="history-table">
+                        <thead>
+                            <tr><th>#</th><th>Theme</th><th>Score</th><th>Date</th></tr>
+                        </thead>
+                        <tbody>
+                            ${history.map((h, index) => `
+                                <tr>
+                                    <td>${index + 1}</td>
+                                    <td>${h.theme}</td>
+                                    <td><strong>${h.score}</strong> (${h.percentage}%)</td>
+                                    <td>${new Date(h.date).toLocaleDateString()}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                `;
+            } catch (error) {
+                document.getElementById('history-container').innerHTML = 
+                    '<div class="alert alert-error">Failed to load history</div>';
+            }
+        }
+
+        // ============ TEACHER PANEL ============
+        async function loadManagePanel() {
+            loadStats();
+            loadQuestionsForTheme();
+            loadTeacherHistory();
+        }
+
+        async function loadTeacherHistory() {
+            try {
+                const response = await fetch('/api/teacher/history');
+                const history = await response.json();
+                
+                const container = document.getElementById('teacher-history-container');
+                if (history.length === 0) {
+                    container.innerHTML = '<p>No student quiz attempts yet.</p>';
+                    return;
+                }
+                
+                container.innerHTML = `
+                    <table class="history-table">
+                        <thead>
+                            <tr><th>#</th><th>Student</th><th>Theme</th><th>Score</th><th>Date</th></tr>
+                        </thead>
+                        <tbody>
+                            ${history.map((h, index) => `
+                                <tr>
+                                    <td>${index + 1}</td>
+                                    <td>${h.student}</td>
+                                    <td>${h.theme}</td>
+                                    <td><strong>${h.score}</strong> (${h.percentage}%)</td>
+                                    <td>${new Date(h.date).toLocaleDateString()}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                `;
+            } catch (error) {
+                document.getElementById('teacher-history-container').innerHTML = 
+                    '<div class="alert alert-error">Failed to load student history</div>';
+            }
+        }
+
+        async function loadStats() {
+            try {
+                const response = await fetch('/health');
+                const data = await response.json();
+                document.getElementById('stat-themes').textContent = data.themes;
+                document.getElementById('stat-questions').textContent = data.questions;
+                document.getElementById('stat-students').textContent = data.users - 1; // Exclude teacher
+            } catch (error) {
+                console.error('Failed to load stats:', error);
+            }
+        }
+
+        async function addTheme() {
+            const name = document.getElementById('new-theme-name').value.trim();
+            const description = document.getElementById('new-theme-desc').value.trim();
+            
+            if (!name || !description) {
+                alert('Please fill in theme name and description');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/teacher/themes', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        name,
+                        description,
+                        created_by: currentUser.id
+                    })
+                });
+                
+                const data = await response.json();
+                if (data.status === 'created') {
+                    alert('✅ Theme added successfully!');
+                    document.getElementById('new-theme-name').value = '';
+                    document.getElementById('new-theme-desc').value = '';
+                    loadStats();
+                    loadThemes();
+                } else {
+                    alert('Failed: ' + (data.detail || 'Unknown error'));
+                }
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        }
+
+        async function addQuestion() {
+            const theme_id = document.getElementById('question-theme-select').value;
+            const question = document.getElementById('new-question-text').value.trim();
+            const options = [
+                document.getElementById('opt-a').value.trim(),
+                document.getElementById('opt-b').value.trim(),
+                document.getElementById('opt-c').value.trim(),
+                document.getElementById('opt-d').value.trim()
+            ];
+            const answer = document.getElementById('correct-answer').value;
+            const explanation = document.getElementById('question-explanation').value.trim();
+            
+            if (!theme_id || !question || options.some(o => !o)) {
+                alert('Please fill in all fields');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/teacher/questions', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        theme_id: parseInt(theme_id),
+                        question,
+                        options,
+                        answer,
+                        explanation,
+                        created_by: currentUser.id
+                    })
+                });
+                
+                const data = await response.json();
+                if (data.status === 'created') {
+                    alert('✅ Question added successfully!');
+                    // Clear form
+                    ['new-question-text', 'opt-a', 'opt-b', 'opt-c', 'opt-d', 'question-explanation']
+                        .forEach(id => document.getElementById(id).value = '');
+                    loadStats();
+                    loadQuestionsForTheme();
+                } else {
+                    alert('Failed: ' + (data.detail || 'Unknown error'));
+                }
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        }
+
+        async function loadQuestionsForTheme() {
+            const theme_id = document.getElementById('view-questions-theme').value;
+            const url = theme_id 
+                ? `/api/teacher/questions?theme_id=${theme_id}`
+                : '/api/teacher/questions';
+            
+            try {
+                const response = await fetch(url);
+                const questions = await response.json();
+                
+                const container = document.getElementById('questions-list');
+                if (questions.length === 0) {
+                    container.innerHTML = '<p>No questions found. Add some questions to get started!</p>';
+                    return;
+                }
+                
+                container.innerHTML = questions.map(q => `
+                    <div class="q-box">
+                        <p class="question">${q.question}</p>
+                        <p><strong>Options:</strong> A) ${q.options[0]} | B) ${q.options[1]} | C) ${q.options[2]} | D) ${q.options[3]}</p>
+                        <p><strong>Answer:</strong> ${q.correct_answer}</p>
+                        <p><strong>Theme:</strong> ${q.theme_name}</p>
+                        <p><strong>Explanation:</strong> ${q.explanation || 'N/A'}</p>
+                        <button class="btn btn-danger" onclick="deleteQuestion(${q.id})" style="margin-top:10px;">
+                            🗑️ Delete
+                        </button>
+                    </div>
+                `).join('');
+            } catch (error) {
+                document.getElementById('questions-list').innerHTML = 
+                    '<div class="alert alert-error">Failed to load questions</div>';
+            }
+        }
+
+        async function deleteQuestion(questionId) {
+            if (!confirm('Are you sure you want to delete this question?')) return;
+            
+            try {
+                const response = await fetch(`/api/teacher/questions/${questionId}`, {
+                    method: 'DELETE'
+                });
+                const data = await response.json();
+                if (data.status === 'deleted') {
+                    alert('✅ Question deleted');
+                    loadStats();
+                    loadQuestionsForTheme();
+                } else {
+                    alert('Failed to delete question');
+                }
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        }
+    </script>
+</body>
+</html>
