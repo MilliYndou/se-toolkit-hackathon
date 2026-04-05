@@ -7,12 +7,19 @@ A theme-based quiz manager where teachers curate questions and students generate
 ## Demo
 
 ### Student View - Quiz Generation
+<img width="938" height="881" alt="image" src="https://github.com/user-attachments/assets/4eb89a3c-b4ee-4fa3-9527-824adec40fc7" />
 
 ### Student View - Quiz History
+<img width="946" height="608" alt="image" src="https://github.com/user-attachments/assets/1066b2f9-706a-46a3-800a-b184bc28fb4c" />
+
 
 ### Teacher View - Add Question
+<img width="942" height="833" alt="image" src="https://github.com/user-attachments/assets/f5f277fa-e984-482a-ba4e-1e96931e6197" />
+
 
 ### Teacher View - Student History
+<img width="937" height="498" alt="image" src="https://github.com/user-attachments/assets/e2d65d5d-006a-4fc3-969a-9a93387096cc" />
+
 
 ---
 
