@@ -146,12 +146,15 @@ sudo systemctl enable docker
 
 # Add user to docker group (optional - avoids sudo)
 sudo usermod -aG docker $USER
+```
 
 ### Step-by-Step Deployment Instructions
 
 ## Option A: Local Python Deployment
 
+```bash
 # Step 1: Clone repository
+
 cd /home/ubuntu
 git clone https://github.com/YOUR_USERNAME/studybuddy.git
 cd studybuddy
@@ -175,9 +178,11 @@ python main.py
 # Step 7: Access the application
 # Open browser: http://<VM_IP_ADDRESS>:8000
 # Or if on localhost: http://localhost:8000
+```
 
 ## Option B: Docker Deployment
 
+```bash
 # Step 1: Clone repository
 cd /home/ubuntu
 git clone https://github.com/YOUR_USERNAME/studybuddy.git
@@ -197,3 +202,4 @@ docker compose logs -f
 
 # Step 6: Stop deployment (when done)
 docker compose down
+```
